@@ -1,7 +1,7 @@
 const userModel = require("../models/users.model");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 
 const userSignupController = async (req, res) => {
   try {
@@ -37,7 +37,7 @@ const userSignupController = async (req, res) => {
       interests,
     });
 
-    const user  = await userData.save();
+    const user = await userData.save();
 
     return res.status(201).json({
       success: true,
@@ -51,40 +51,71 @@ const userSignupController = async (req, res) => {
   }
 };
 
-const userLoginController = async(req, res) => {
-  try{
-    const {email, password} = req.body;
+const userLoginController = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-    if(!email || !password) {
-      return res.status(400).json({success : false, message : "Invalid credentials"})
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid credentials" });
     }
 
-    const isUserExists = await userModel.findOne({email : email})
+    const isUserExists = await userModel
+      .findOne({ email: email })
+      .select("+password");
 
-    if(!isUserExists){
-      return res.status(404).json({success : false, message : "User not found"})
+    if (!isUserExists) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
-    const isPassword = await bcrypt.compare(password, isUserExists.password)
+    const isPassword = bcrypt.compare(password, isUserExists.password);
 
-    if(!isPassword) {
-      return res.status(400).json({success : false, message : "Invalid credentials"})
+    if (!isPassword) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid credentials" });
     }
 
-    const token = await jwt.sign({userId : isUserExists._id}, process.env.JWT_SECRET_TOKEN)
+    const token = await jwt.sign(
+      { userId: isUserExists._id },
+      process.env.JWT_SECRET_TOKEN,
+    );
 
-    res.cookie("token", token)
+    res.cookie("token", token);
 
     return res.status(200).json({
-      success : true, 
-      message : "credentials matched",
-    })
+      success: true,
+      message: "credentials matched",
+    });
+  } catch (err) {
+    return res
+      .status(400)
+      .json({
+        success: false,
+        message: err.message || "Oops something went wrong",
+      });
   }
-  catch(err){
-    return res.status(400).json({success : false, message : err.message || "Oops something went wrong"})
+};
+
+const userLogoutController = (req, res) => {
+  try {
+    res.cookie("token", null, {expires : new Date(Date.now())})
+    return res.status(200).json({success : true, message : "logout successfull"})
+  } catch (err) {
+    return res
+      .status(400)
+      .json({
+        success: false,
+        message: err.message || "Oops something went wrong",
+      });
   }
-}
+};
 
 module.exports = {
   userSignupController,
+  userLoginController,
+  userLogoutController
 };
