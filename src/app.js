@@ -10,8 +10,10 @@ app.use(cookieParser())
 
 const authRouter = require("./routes/userAuth.routes.js")
 const productsRouter = require("./routes/products.routes.js")
+const cartRouter = require("./routes/cart.routes.js")
 app.use("/auth", authRouter)
 app.use("/products", productsRouter)
+app.use("/cart", cartRouter)
 
 
 app.use("/", (req, res) => {
