@@ -3,6 +3,8 @@ const validator = require("validator")
 const userModel = require("../models/user.model")
 const sendOtp = require("../helpers/sendOtp.helper.js")
 const verifyOtp = require("../helpers/verifyOtp.helper.js")
+const otpModel = require("../models/otp.model.js")
+const crypto = require("crypto")
 
 
 const updatePassword = async(req, res) => {
@@ -69,13 +71,44 @@ const getUser = (req, res) => {
     }
 }
 
-const deleteUser = async(req, res) => {
+const deleteUserSendOtp = async(req, res) => {
     try{
-        const data = await userModel.findByIdAndDelete(req.user._id)
 
-        return res.status(204).json({
+        const {user} = req;
+
+        const otpStored = await otpModel.findOne({user : user._id, purpose : "deleteAccount"})
+        if(otpStored && (otpStored.expiresAt - (3 * 60 * 1000) + 60000) > Date.now()){
+            return res.status(429).json({
+                success : true,
+                message : "Too many requests. Wait for few seconds and try again"
+            }) 
+        }
+
+        const subject = "Verification for deleting yoour account"
+        const text = "Use this OTP to delete yoour account, once deleted your data cant be retrived. OTP expires in 3 mins"
+
+        const response = await sendOtp(user.email, subject, text)
+        if(!response.success){
+            return res.status(204).json({
+                success : true,
+                message : response.message || "Oops something went wrong"
+            }) 
+        }
+
+        await otpModel.findOneAndUpdate({
+            user : user._id, 
+            purpose : "deleteAccount"
+        }, {
+            otp : crypto.createHash("sha256").update(response.otp).digest("hex"),
+            expiresAt : Date.now() + (3 * 60 * 1000) 
+        }, {
+            upsert : true, new : true
+        })
+
+
+        return res.status(200).json({
             success : true,
-            message : "Your account has been deleted successfully"
+            message : "OTP has been sent your email, verify OTP and then delete your account"
         }) 
     }
     catch(err){
@@ -86,10 +119,52 @@ const deleteUser = async(req, res) => {
     }
 }
 
+const deleteUserVerifyOtp = async(req, res) => {
+    try{
+        const {user} = req
+        const {otp} = req.body
+
+        const otpStored = await otpModel.findOne({user : user._id, purpose : "deleteAccount"})
+
+        if(!otpStored){
+            return res.status(400).json({
+                success : false,
+                message : "OTP has been expired"
+            })
+        }
+
+        let cleanOtp = String(otp).trim()
+
+        const response = await verifyOtp(otpStored.otp, cleanOtp)
+
+        if(!response.success){
+            return res.status(400).json({
+                success : false,
+                message : response.message ||"Oops something went wrong"
+            })
+        }
+
+        await userModel.findByIdAndDelete(user._id)
+        await otpStored.deleteOne()
+        
+        return res.status(200).json({
+            success : true,
+            message : "Your account has been deleted successfully"
+        })
+    }
+    catch(err){
+        return res.status(400).json({
+            success : false,
+            message : err.message ||"Oops something went wrong"
+        })
+    }
+}
+
+
 
 module.exports = {
     updatePassword,
     getUser,
-    deleteUser,
-    editUser
+    deleteUserSendOtp,
+    deleteUserVerifyOtp
 }

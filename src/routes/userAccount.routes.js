@@ -20,8 +20,8 @@ router.post(
 const userAccountControllers = require("../controllers/userAccount.controller.js")
 router.post("/updatePassword", userAuthMiddleware, userAccountControllers.updatePassword)
 router.get("/getUser", userAuthMiddleware, userAccountControllers.getUser)
-router.delete("/deleteUser", userAuthMiddleware, userAccountControllers.deleteUser)
-router.patch("/editUser", userAuthMiddleware, userAccountControllers.editUser)
+router.delete("/deleteUserSendOtp", userAuthMiddleware, userAccountControllers.deleteUserSendOtp)
+router.delete("/deleteUserVerifyOtp", userAuthMiddleware, userAccountControllers.deleteUserVerifyOtp)
 
 const forgotPasswordControllers = require("../controllers/forgotPassword.controller.js");
 router.post(

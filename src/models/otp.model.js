@@ -10,9 +10,9 @@ const otpSchema = new mongoose.Schema({
         type : String,
         default : ""
     },
-    otpCreatedAt : {
+    expiresAt : {
         type : Number,
-        default : 0
+        default : () => new Date(Date.now() + 3 * 60 * 1000)
     },
     purpose : {
         type : String,
@@ -20,9 +20,12 @@ const otpSchema = new mongoose.Schema({
         enum : {
             values : ["resetPassword", "verifyAccount", "deleteAccount", "login", "order"],
             message : " NOT a valid value"
-        }
-    }
-})
+        },
+        unique : true
+    },
 
+}, {timestamps : true})
+
+otpSchema.index({expiresAt : 1}, {expireAfterSeconds : 0})
 
 module.exports = mongoose.model("otps", otpSchema)

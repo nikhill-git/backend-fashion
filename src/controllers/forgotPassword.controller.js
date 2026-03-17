@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt")
 const validator = require("validator")
 const sendOtp = require("../helpers/sendOtp.helper")
 const verifyOtp = require("../helpers/verifyOtp.helper")
+const otpModel = require("../models/otp.model")
 
 const forgotPassSendOtp = async(req, res) => {
     try {
@@ -18,10 +19,12 @@ const forgotPassSendOtp = async(req, res) => {
         if(!user){
             return res.status(404).json({success : false, message : "User not found"})
         }
-        //rate limiting
-        if(user.forgotPassOtpExpiredAt && user.forgotPassOtpExpiredAt - (3* 60 * 1000) + 30000 > Date.now()){
+
+        const otpStored = await otpModel.findOne({user : user._id, purpose : 'resetPassword'})
+        if(otpStored && (otpStored.expiresAt - (3 * 60 * 1000) + 60000) > Date.now()){
             return res.status(429).json({success : false, message : "Too many requests. wait for few seconds and try again"})
         }
+
 
         const subject = "Verification for forgot password"
         const text = "Use this OTP for verification reset your password. OTP expires in 3mins"
@@ -34,10 +37,15 @@ const forgotPassSendOtp = async(req, res) => {
             })
         }
 
-        user.forgotPassOtp = crypto.createHash("sha256").update(result.otp).digest("hex")
-        user.forgotPassOtpExpiredAt = Date.now() + (3 * 60 * 1000)
-
-        await user.save()
+        await otpModel.findOneAndUpdate({
+            user : user._id,
+            purpose : "resetPassword"
+        }, {
+            otp :  crypto.createHash("sha256").update(result.otp).digest("hex"),
+            expiresAt :  Date.now() + (3 * 60 * 1000)
+        }, {
+            upsert : true, new : true
+        })
 
         return res.status(200).json({success : true, message : "OTP has been sent to your email successfully"})
 
@@ -69,14 +77,15 @@ const forgotPassVerifyOtp = async(req, res) => {
                 message : "User not found"
             })
         }
-        
-        //if user is sending OTP after time is expired
-        if(!user.forgotPassOtp || Date.now() > user.forgotPassOtpExpiredAt){
+
+        const otpStored = await otpModel.findOne({user : user._id, purpose : "resetPassword"})
+        if(!otpStored){
             return res.status(400).json({
                 success : false,
                 message : "OTP expired resend OTP and try again"
             })
         }
+
         
         if(OTP.length !== 6){
             return res.status(400).json({
@@ -86,7 +95,7 @@ const forgotPassVerifyOtp = async(req, res) => {
         }
         
         let cleanOTP = String(OTP).trim()
-        const response = await verifyOtp(user.forgotPassOtp, cleanOTP)
+        const response = await verifyOtp(otpStored.otp, cleanOTP)
         
         if(!response.success){
             return res.status(400).json({
@@ -95,8 +104,7 @@ const forgotPassVerifyOtp = async(req, res) => {
             })
         }
 
-        user.forgotPassOtp = ""
-        user.forgotPassOtpExpiredAt = 0
+        await otpStored.deleteOne()
         
         await user.save()
         

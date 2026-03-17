@@ -73,6 +73,10 @@ const userSchema = new mongoose.Schema({
             message : "Interests allowed 1 - 15"
         }
     },
+    isAccountVerified : {
+        type : Boolean,
+        default : false
+    }
 },{timestamps : true})
 
 
