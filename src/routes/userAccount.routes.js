@@ -2,26 +2,26 @@ const express = require("express");
 
 const router = express.Router();
 
-const { userAuthMiddleware } = require("../middlewares/userAuth.middleware.js");
+const { authenticate } = require("../middlewares/authenticate.middleware.js");
 
 const verifyAccountControllers = require("../controllers/verifyAccount.controller.js");
 router.post(
   "/verifyAccount/sendOtp",
-  userAuthMiddleware,
+  authenticate,
   verifyAccountControllers.verifyAccountSendOtp,
 );
 router.post(
   "/verifyAccount/verifyOtp",
-  userAuthMiddleware,
+  authenticate,
   verifyAccountControllers.verifyAccountOtp,
 );
 
 
 const userAccountControllers = require("../controllers/userAccount.controller.js")
-router.post("/updatePassword", userAuthMiddleware, userAccountControllers.updatePassword)
-router.get("/getUser", userAuthMiddleware, userAccountControllers.getUser)
-router.delete("/deleteUserSendOtp", userAuthMiddleware, userAccountControllers.deleteUserSendOtp)
-router.delete("/deleteUserVerifyOtp", userAuthMiddleware, userAccountControllers.deleteUserVerifyOtp)
+router.post("/updatePassword", authenticate, userAccountControllers.updatePassword)
+router.get("/getUser", authenticate, userAccountControllers.getUser)
+router.delete("/deleteUserSendOtp", authenticate, userAccountControllers.deleteUserSendOtp)
+router.delete("/deleteUserVerifyOtp", authenticate, userAccountControllers.deleteUserVerifyOtp)
 
 const forgotPasswordControllers = require("../controllers/forgotPassword.controller.js");
 router.post(

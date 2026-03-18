@@ -1,6 +1,6 @@
 const crypto = require("crypto")
 const {transporter} = require("../config/nodemailer")
-const userModel = require("../models/user.model")
+const accountModel = require("../models/account.model")
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt")
 const validator = require("validator")
@@ -15,7 +15,7 @@ const forgotPassSendOtp = async(req, res) => {
             return res.status(400).json({success : false, message : "Email is required"})
         }
         
-        const user = await userModel.findOne({email : email})
+        const user = await accountModel.findOne({email : email})
         if(!user){
             return res.status(404).json({success : false, message : "User not found"})
         }
@@ -70,7 +70,7 @@ const forgotPassVerifyOtp = async(req, res) => {
             })
         }
         
-        const user = await userModel.findOne({email : email})
+        const user = await accountModel.findOne({email : email})
         if(!user){
             return res.status(404).json({
                 success : false,
@@ -141,7 +141,7 @@ const verifyAndResetPassword = async(req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_TOKEN_FORGOT_PASSWORD)
         
         
-        const user = await userModel.findById(decoded.userId)
+        const user = await accountModel.findById(decoded.userId)
         
         if(!user || decoded.purpose !== "reset-password"){
             return res.status(401).json({

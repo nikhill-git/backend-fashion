@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt")
 const validator = require("validator")
-const userModel = require("../models/user.model")
+const accountModel = require("../models/account.model")
 const sendOtp = require("../helpers/sendOtp.helper.js")
 const verifyOtp = require("../helpers/verifyOtp.helper.js")
 const otpModel = require("../models/otp.model.js")
@@ -16,7 +16,7 @@ const updatePassword = async(req, res) => {
         if(currPassword === newPassword){
             return res.status(403).json({success : false, message : "Both currPassword and newPassword are same"})
         }
-        const user = await userModel.findById(req.user._id).select("+password")
+        const user = await accountModel.findById(req.user._id).select("+password")
     
         if(!currPassword || !newPassword){
             return res.status(400).json({
@@ -144,7 +144,7 @@ const deleteUserVerifyOtp = async(req, res) => {
             })
         }
 
-        await userModel.findByIdAndDelete(user._id)
+        await accountModel.findByIdAndDelete(user._id)
         await otpStored.deleteOne()
         
         return res.status(200).json({

@@ -13,6 +13,12 @@ app.use("/api/auth", userAuthRoutes)
 app.use("/api/account", userAccountRoutes)
 
 
+
+//product riuet
+const productRoutes = require("./routes/products.routes.js")
+app.use("/api/products", productRoutes)
+
+
 app.use("/", (req, res) => {
   res.status(404).send("No URL matched this route");
 });

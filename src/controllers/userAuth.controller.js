@@ -1,6 +1,6 @@
 const { email } = require("zod");
 const {validateUserSchema} = require("../helpers/validateUser.js")
-const userModel = require("../models/user.model.js")
+const accountModel = require("../models/account.model.js")
 const bcrypt = require("bcrypt")
 const jwt = require('jsonwebtoken')
 const {transporter} = require("../config/nodemailer.js")
@@ -18,7 +18,7 @@ const signupController = async (req, res, next) => {
     const userData = data;
     userData.password = await bcrypt.hash(req.body.password, 10);
 
-    const newUser = await userModel.create(userData);
+    const newUser = await accountModel.create(userData);
 
     const jwtToken = jwt.sign({userId : newUser._id} , process.env.JWT_TOKEN)
 
@@ -65,7 +65,7 @@ const loginController = async (req, res) => {
       return res.status(400).json({success : false, message : "Invalid credentials"})
     }
     
-    const user = await userModel.findOne({email : email}).select("+password")
+    const user = await accountModel.findOne({email : email}).select("+password")
     if(!user){
       return res.status(404).json({success : false, message : "User not found"})
     }

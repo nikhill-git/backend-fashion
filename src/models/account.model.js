@@ -73,19 +73,28 @@ const userSchema = new mongoose.Schema({
             message : "Interests allowed 1 - 15"
         }
     },
+    role : {
+        type : String,
+        enum : {
+            values : ["user", "developer", "seller"],
+            message : "Not a valid role"
+        }
+    },
     isAccountVerified : {
+        type : Boolean,
+        default : false
+    },
+    isAccountActive : {
         type : Boolean,
         default : false
     }
 },{timestamps : true})
 
 
-
-
 userSchema.methods.hashPassword = async function (password) {
     return await bcrypt.hash(password, 10)
 }
 
-const userModel = mongoose.model("users", userSchema)
+const userModel = mongoose.model("accounts", userSchema)
 
 module.exports = userModel
