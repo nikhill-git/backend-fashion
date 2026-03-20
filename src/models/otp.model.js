@@ -3,7 +3,7 @@ const mongoose = require("mongoose")
 const otpSchema = new mongoose.Schema({
     user : {
         type : mongoose.Schema.Types.ObjectId,
-        ref : "users",
+        ref : "accounts",
         required :  [true, "userId is required to otp focument"],
     },
     otp : {
@@ -23,9 +23,11 @@ const otpSchema = new mongoose.Schema({
         },
         unique : true
     },
-
 }, {timestamps : true})
 
 otpSchema.index({expiresAt : 1}, {expireAfterSeconds : 0})
 
 module.exports = mongoose.model("otps", otpSchema)
+
+
+

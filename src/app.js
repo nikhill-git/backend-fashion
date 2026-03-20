@@ -13,8 +13,12 @@ app.use("/api/auth", userAuthRoutes)
 app.use("/api/account", userAccountRoutes)
 
 
+//seller Routes
+const sellerRoutes = require("./routes/seller.routes.js")
+app.use("/api/seller", sellerRoutes)
 
-//product riuet
+
+//product route
 const productRoutes = require("./routes/products.routes.js")
 app.use("/api/products", productRoutes)
 

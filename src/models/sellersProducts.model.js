@@ -3,7 +3,7 @@ const mongoose = require("mongoose")
 const sellersProducts = new mongoose.Schema({
     seller : {
         type : mongoose.Schema.Types.ObjectId,
-        ref : "accounts",
+        ref : "sellers",
         required : true
     },
     totalProducts : {

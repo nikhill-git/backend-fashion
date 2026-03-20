@@ -3,9 +3,9 @@ const mongoose = require("mongoose");
 
 const productSchema = mongoose.Schema(
   {
-    sellersId : {
+    sellerId : {
       type : mongoose.Schema.Types.ObjectId,
-      ref : "accounts",
+      ref : "sellers",
       required : true
     },
     title: {

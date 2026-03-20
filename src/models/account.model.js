@@ -86,7 +86,7 @@ const userSchema = new mongoose.Schema({
     },
     isAccountActive : {
         type : Boolean,
-        default : false
+        default : true
     }
 },{timestamps : true})
 

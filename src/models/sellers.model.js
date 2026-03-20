@@ -6,6 +6,7 @@ const sellersSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "accounts",
       required: true,
+      immutable : true
     },
     storeName: {
       type: String,
@@ -15,7 +16,7 @@ const sellersSchema = new mongoose.Schema(
       type: String,
       enum: {
         values: ["active", "pending", "suspended"],
-        message: "Not a valid status",
+        message: "Not a valid status", 
       },
       default: "pending",
     },
@@ -28,6 +29,7 @@ const sellersSchema = new mongoose.Schema(
       required: true,
       unique: true,
       lowercase: true,
+      immutable : true
     },
     address: {
       street: String,
@@ -36,12 +38,13 @@ const sellersSchema = new mongoose.Schema(
       country: String,
     },
     contact: {
-      type: Number,
+      type: String,
       required: true,
     },
     taxPerProduct: {
       type: Number,
       required: true,
+      min : 0
     },
     totalSales: {
       type: Number,
@@ -51,7 +54,7 @@ const sellersSchema = new mongoose.Schema(
     rating: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0,
       max: 5,
     },
   },
