@@ -15,7 +15,7 @@ const sellersSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: {
-        values: ["active", "pending", "suspended"],
+        values: ["active", "pending", "unactive", "block"],
         message: "Not a valid status", 
       },
       default: "pending",
@@ -50,6 +50,10 @@ const sellersSchema = new mongoose.Schema(
       type: Number,
       required: true,
       default: 0,
+    },
+    balanceAmount : {
+      type : Number,
+      default : 0
     },
     rating: {
       type: Number,
