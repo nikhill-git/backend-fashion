@@ -18,7 +18,7 @@ const otpSchema = new mongoose.Schema({
         type : String,
         required : [true, "You must tell the purppose of creating this document"],
         enum : {
-            values : ["resetPassword", "verifyAccount", "deleteAccount", "login", "order"],
+            values : ["resetPassword", "verifyAccount", "deleteAccount", "login", "order", "deactivateSeller"],
             message : " NOT a valid value"
         },
         unique : true
