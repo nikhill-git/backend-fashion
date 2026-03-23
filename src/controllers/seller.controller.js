@@ -85,7 +85,7 @@ const updateSeller = async (req, res) => {
 
     const VALID_UPDATES = ["storeName", "category", "address", "contact"];
 
-    const isUpdateValid = Object.keys(userData).forEach((key) =>
+    const isUpdateValid = Object.keys(userData).every((key) =>
       VALID_UPDATES.includes(key),
     );
 
@@ -148,7 +148,6 @@ const unactivateSeller = async (req, res) => {
         message: "Seller doesnt exists",
       });
     }
-
 
     const isSeller = await sellerModel.findById(sellerId);
     if (!isSeller) {
@@ -311,7 +310,7 @@ const unactivateSellerVerification = async(req, res) => {
   finally{
     session.endSession()
   }
-}
+};
 
 const activateSeller = async (req, res) => {};
 
@@ -321,4 +320,6 @@ const blockSeller = async (req, res) => {};
 module.exports = {
   createSeller,
   updateSeller,
+  unactivateSeller,
+  unactivateSellerVerification
 };

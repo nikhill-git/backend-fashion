@@ -1,6 +1,7 @@
 const sellersModel = require("../models/sellers.model");
-const validateProduct = require("../helpers/validateProduct");
+const {validateProduct, validateProductUpdates} = require("../helpers/validateProduct");
 const productModel = require("../models/product.model");
+const userModel = require("../models/account.model");
 
 const addProducts = async (req, res) => {
   try {
@@ -141,8 +142,30 @@ const deleteProducts = async (req, res) => {
 
 const getProducts = async(req, res) => {
   try{
+
+    const limit = parseInt(req.query.limit) || 20
+    const page = parseInt(req.query.page) || 1
+    const skip = (page - 1)* limit
+
+    const data = await productModel.find()
+    .skip(skip)
+    .limit(limit)
+    .lean()
+
+    if(!data){
+      return res.status(404).json({
+        success : false,
+        message : "Not products found"
+      })
+    }
     
+    return res.status(200).json({
+      success : true,
+      totalProducts : data.length,
+      products : data
+    })
   }
+
   catch(err){
     return res.status(400).json({
       success : false,
@@ -151,8 +174,81 @@ const getProducts = async(req, res) => {
   }
 }
 
+const updateProducts = async(req, res) => {
+  try{
+    //only seller or developer can update the product
+    //this is authorized api,
+
+    const {productId, updateData} = req.body
+
+    if(!productId || !updateData){
+      return res.status(400).json({
+        message : false,
+        message : "Required feilds missing"
+      })
+    }
+
+    const isProduct = await productModel.findById(productId)
+
+    if(!isProduct){
+      return res.status(404).json({
+        message : false,
+        message : "Product not found"
+      })
+    }
+    
+    const VALID_UPDATES = ["title", "price", "category", "brand", "description", "rating", "discountPercentage", "quantity", "image", "delivarable"]
+    
+    const isUpdateValid = Object.keys(updateData).every((key) => VALID_UPDATES.includes(key))
+    
+    if(!isUpdateValid){
+      return res.status(400).json({
+        message : false,
+        message : "Not a valid update"
+      })
+    }
+
+    //validation using by extending validateProduct fun, by making every felid optional using partial keyword
+    const isUpdateDataValid = validateProductUpdates.safeParse(updateData)
+
+    if(!isUpdateDataValid.success){
+      return res.status(400).json({
+        success : false,
+        message : "The data you have sebt is not valid"
+      })
+    }
+    
+    const updatedProd = await productModel.findByIdAndUpdate(
+      productId, 
+      updateData,
+      {new : true}
+    )
+    
+    if(!updatedProd){
+      return res.status(400).json({
+        message : false,
+        message : "update was not successfull, try again later"
+      })
+    }
+       
+    return res.status(200).json({
+      message : false,
+      message : "product updated successfull",
+      product : updatedProd
+    })
+
+  }
+  catch(err){
+    return res.status(400).json({
+      success : false,
+      message : err.message || "Oops something went wrong" 
+    })
+  }
+}
+
 module.exports = {
   addProducts,
   deleteProducts,
-  getProducts
+  getProducts,
+  updateProducts
 };

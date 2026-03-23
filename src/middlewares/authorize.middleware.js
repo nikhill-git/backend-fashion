@@ -1,6 +1,7 @@
 const authorize = (...allowedRoles) => {
   return (req, res, next) => {
     try {
+
       const { user } = req;
       if (!user) {
         return res.status(401).json({
